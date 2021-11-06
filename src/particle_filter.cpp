@@ -74,8 +74,8 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
 
         double x,y,theta;
         if (fabs(yaw_rate) < 0.00001) { //car going straight
-            x = particles[i].x + velocity*delta_t*cos(yaw_rate);
-            y = particles[i].y + velocity*delta_t*sin(yaw_rate);
+            x = particles[i].x + velocity*delta_t*cos(particles[i].theta);
+            y = particles[i].y + velocity*delta_t*sin(particles[i].theta);
 			theta = particles[i].theta;
         }else{ //yaw rate is not equal to zero, car turning
             x = particles[i].x + (velocity/yaw_rate) * (sin(particles[i].theta + yaw_rate*delta_t) - sin(particles[i].theta));
@@ -100,27 +100,10 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
 void ParticleFilter::dataAssociation(std::vector<LandmarkObs> inRangeLandmark, std::vector<LandmarkObs>& observations) {
     
 	// TODO: Find the predicted measurement that is closest to each observed measurement and assign the observed measurement to this particular landmark.
-    
-	/*
-		HINT:
-		For each observation in J //use the observations.size() function
-		Min_dist=INFINITY
-		For each prediction in K
-			diff_x=inRangeLandmark[K].x-observation[J].x
-			diff_y=inRangeLandmark[K].y-observation[J].y
-			dist=//FILL with euclidean distance
-			if(dist<min_dist)
-				min_dist=dist
-				index_min=inRangeLandmark[K].id
-			end if
-		End for
-		Observations[J].id=index_min
-		End for
-	*/
 
     int index_min = 0;
 
-    for(int j = 0; j > observations.size(); j++){
+    for(int j = 0; j < observations.size(); j++){
         double dist_min = std::numeric_limits<double>::max();
         for(int k = 0; k < inRangeLandmark.size(); k++){
             double diff_x = inRangeLandmark[k].x - observations[j].x;
@@ -236,12 +219,6 @@ void ParticleFilter::resample() {
             beta = beta - weights[index];
             index = (index + 1) % num_particles;
         }
-        particles.push_back(p[index]);
-    }
-    particles = std::move(p);
-
-    for (int i = 0; i < num_particles; ++i) {
-        auto index = uni_dist(gen);
         p[i] = std::move(particles[index]);
     }
     particles = std::move(p);
@@ -293,4 +270,3 @@ string ParticleFilter::getSenseY(Particle best)
     s = s.substr(0, s.length()-1);  // get rid of the trailing space
     return s;
 }
-//fede
